@@ -79,9 +79,6 @@ module.exports = (function (http) {
                     if (contactSessions[fromUserName] == null) {
                         contactSessions[fromUserName] = new Contact(fromUserName);
                     }
-                    else if (contactSessions[fromUserName].isActive()) {
-                        contactSessions[fromUserName].incrementMsgNum();
-                    }
 
                     if (!msg['isSendBySelf'] && !contactSessions[fromUserName].isActive()) {
                         let reply;
@@ -101,6 +98,7 @@ module.exports = (function (http) {
                         contactSessions[fromUserName].activate();
                         contactSessions[fromUserName].timeout(contactSessionTimeout);
                     }
+                    contactSessions[fromUserName].incrementMsgNum();
                 }
                 else if (msg['MsgType'] !== 1) {
                     console.log('Ignore message with type: ' + msg['MsgType'] + '.');
