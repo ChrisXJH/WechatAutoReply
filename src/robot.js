@@ -102,6 +102,9 @@ module.exports = (function (http) {
                         contactSessions[fromUserName].timeout(contactSessionTimeout);
                     }
                 }
+                else if (msg['MsgType'] !== 1) {
+                    console.log('Ignore message with type: ' + msg['MsgType'] + '.');
+                }
             });
         }
 
