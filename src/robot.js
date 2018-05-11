@@ -74,7 +74,7 @@ module.exports = (function (http) {
 
             Wechat.on('message', msg => {
                 console.log("Message: ", JSON.stringify(msg, null, 2));
-                if (messageMap[currentState] != null && msg['MsgType'] === 1) {
+                if (messageMap[currentState] != null && (msg['MsgType'] === 1 || msg['MsgType'] === 34)) {
                     let fromUserName = msg['FromUserName'];
                     if (contactSessions[fromUserName] == null) {
                         contactSessions[fromUserName] = new Contact(fromUserName);
