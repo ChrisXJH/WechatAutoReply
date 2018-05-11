@@ -74,7 +74,7 @@ module.exports = (function (http) {
 
             Wechat.on('message', msg => {
                 console.log("Message: ", JSON.stringify(msg, null, 2));
-                if (!msg['isSendBySelf'] && messageMap[currentState] != null) {
+                if (messageMap[currentState] != null && msg['MsgType'] === 1) {
                     let fromUserName = msg['FromUserName'];
                     if (contactSessions[fromUserName] == null) {
                         contactSessions[fromUserName] = new Contact(fromUserName);
@@ -83,7 +83,7 @@ module.exports = (function (http) {
                         contactSessions[fromUserName].incrementMsgNum();
                     }
 
-                    if (!contactSessions[fromUserName].isActive()) {
+                    if (!msg['isSendBySelf'] && !contactSessions[fromUserName].isActive()) {
                         let reply;
                         if (contactSessions[fromUserName].getReceivedMsgNum() <= 2) {
                             reply = `【自动回复】${messageMap[currentState]}`;
@@ -93,12 +93,10 @@ module.exports = (function (http) {
                         }
 
                         console.log('Reply: ', reply);
-
                         Wechat.sendMsg(reply, fromUserName)
                         .catch(err => {
                             console.error(err);
                         });
-
 
                         contactSessions[fromUserName].activate();
                         contactSessions[fromUserName].timeout(contactSessionTimeout);

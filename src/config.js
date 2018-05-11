@@ -2,8 +2,13 @@ const http = require('https');
 
 module.exports = (function (http) {
 
-    const myInfoEndpoint = 'https://raw.githubusercontent.com/ChrisXJH/config-server/master/info.json';
-    const robotConfigEndpoint = 'https://raw.githubusercontent.com/ChrisXJH/config-server/master/wechat_robot.json';
+    const myInfoEndpoint = process.env.CONFIG_SERVER
+            ? process.env.CONFIG_SERVER + '/info.json'
+            : 'https://raw.githubusercontent.com/ChrisXJH/config-server/master/info.json';
+
+    const robotConfigEndpoint = process.env.CONFIG_SERVER
+            ? process.env.CONFIG_SERVER + '/inwechat_robotfo.json'
+            :'https://raw.githubusercontent.com/ChrisXJH/config-server/master/wechat_robot.json';
 
     function fetchMyInfo() {
         return httpGet(myInfoEndpoint);
