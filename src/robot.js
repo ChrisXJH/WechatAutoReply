@@ -17,24 +17,7 @@ module.exports = (function (http) {
         let ready = false;
 
         // Load configuration from the config server
-        let readyPromise = new Promise((resolve, reject) => {
-
-            config.fetchMyInfo().then(info => {
-                currentState = info['currentState'];
-            }).then(() => {
-                config.fetchRobotConfig().then(config => {
-                    messageMap = config['stateMessageMap'];
-                    contactSessionTimeout = config['contactSessionTimeout'];
-                    refreshInterval = config['refreshInterval'];
-                    ready = true;
-                    resolve();
-                }).catch(err => {
-                    console.log(err);
-                });
-            }).catch(err => {
-                console.error(err);
-            });
-        });
+        let readyPromise = updateConfig();
 
         function Contact(username) {
             this.username = username;
@@ -70,6 +53,47 @@ module.exports = (function (http) {
             return this.receivedMsgNum;
         };
 
+        function updateConfig() {
+            return new Promise((resolve, reject) => {
+
+                config.fetchMyInfo().then(info => {
+                    currentState = info['currentState'];
+                }).then(() => {
+                    config.fetchRobotConfig().then(conf => {
+                        messageMap = conf['stateMessageMap'];
+                        contactSessionTimeout = conf['contactSessionTimeout'];
+                        refreshInterval = conf['refreshInterval'];
+                        ready = true;
+                        resolve();
+                    }).catch(err => {
+                        console.log(err);
+                    });
+                }).catch(err => {
+                    console.error(err);
+                });
+            });
+        }
+
+        function sendReplyMessage(fromUserName) {
+            updateConfig().then(() => {
+                let reply;
+                if (contactSessions[fromUserName].getReceivedMsgNum() <= 2) {
+                    reply = `【自动回复】${messageMap[currentState]}`;
+                }
+                else {
+                    reply = `【自动回复】都说了${messageMap[currentState]}！`;
+                }
+
+                console.log('Reply: ', reply);
+                Wechat.sendMsg(reply, fromUserName)
+                .catch(err => {
+                    console.error(err);
+                });
+            }).catch(err => {
+                console.error(err);
+            });
+        }
+
         function startListener() {
 
             Wechat.on('message', msg => {
@@ -81,19 +105,7 @@ module.exports = (function (http) {
                     }
 
                     if (!msg['isSendBySelf'] && !contactSessions[fromUserName].isActive()) {
-                        let reply;
-                        if (contactSessions[fromUserName].getReceivedMsgNum() <= 2) {
-                            reply = `【自动回复】${messageMap[currentState]}`;
-                        }
-                        else {
-                            reply = `【自动回复】都说了${messageMap[currentState]}！`;
-                        }
-
-                        console.log('Reply: ', reply);
-                        Wechat.sendMsg(reply, fromUserName)
-                        .catch(err => {
-                            console.error(err);
-                        });
+                        sendReplyMessage(fromUserName);
 
                         contactSessions[fromUserName].activate();
                         contactSessions[fromUserName].timeout(contactSessionTimeout);
