@@ -24,10 +24,17 @@ module.exports = (function () {
         return null;
     }
 
+    // Determine if a username name is belong to a group chat by
+    // checking if there's leading "@@"
+    function isGroupUserName(username) {
+        return username.match(/@@.*/g) != null;
+    }
+
 
     return {
         findContactByNickName: findContactByNickName,
-        findContactByRemarkName: findContactByRemarkName
+        findContactByRemarkName: findContactByRemarkName,
+        isGroupUserName: isGroupUserName
     };
 
 })();

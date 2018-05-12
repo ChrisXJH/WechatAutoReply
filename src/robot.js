@@ -1,6 +1,6 @@
 const config = require('./config');
-
-module.exports = (function (http) {
+const Utils = require('./utils');
+module.exports = (function (http, Utils) {
 
     return function (Wechat) {
 
@@ -98,8 +98,11 @@ module.exports = (function (http) {
 
             Wechat.on('message', msg => {
                 console.log("Message: ", JSON.stringify(msg, null, 2));
-                if (messageMap[currentState] != null && (msg['MsgType'] === 1 || msg['MsgType'] === 34)) {
-                    let fromUserName = msg['FromUserName'];
+                let fromUserName = msg['FromUserName'];
+                if (messageMap[currentState] != null
+                    && !Utils.isGroupUserName(fromUserName)
+                    && (msg['MsgType'] === 1 || msg['MsgType'] === 34)) {
+
                     if (contactSessions[fromUserName] == null) {
                         contactSessions[fromUserName] = new Contact(fromUserName);
                     }
@@ -138,4 +141,4 @@ module.exports = (function (http) {
         };
     };
 
-})(config);
+})(config, Utils);
