@@ -22,6 +22,7 @@ module.exports = (function (http, Utils) {
         function Contact(username) {
             this.username = username;
             this.receivedMsgNum = 1;
+            this.msgSent = 0;
             this.active = false;
         }
 
@@ -40,8 +41,10 @@ module.exports = (function (http, Utils) {
         Contact.prototype.timeout = function (seconds) {
             let _this = this;
             setTimeout(() => {
-                _this.deactivate();
-                console.log("Contact session timed out: ", _this.username);
+                (function (seconds) {
+                    _this.deactivate();
+                    console.log(`Contact session timed out(${seconds} s): `, _this.username);
+                })(seconds)
             }, seconds * 1000);
         };
 
@@ -51,6 +54,14 @@ module.exports = (function (http, Utils) {
 
         Contact.prototype.getReceivedMsgNum = function () {
             return this.receivedMsgNum;
+        };
+
+        Contact.prototype.incrementMsgSent = function () {
+            this.msgSent++;
+        };
+
+        Contact.prototype.getMsgSent = function () {
+            return this.msgSent;
         };
 
         function updateConfig() {
@@ -89,6 +100,7 @@ module.exports = (function (http, Utils) {
                 .catch(err => {
                     console.error(err);
                 });
+                contactSessions[fromUserName].incrementMsgSent();
             }).catch(err => {
                 console.error(err);
             });
@@ -111,7 +123,7 @@ module.exports = (function (http, Utils) {
                         sendReplyMessage(fromUserName);
 
                         contactSessions[fromUserName].activate();
-                        contactSessions[fromUserName].timeout(contactSessionTimeout);
+                        contactSessions[fromUserName].timeout(contactSessions[fromUserName].getMsgSent() * 10);
                     }
                     contactSessions[fromUserName].incrementMsgNum();
                 }
