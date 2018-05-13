@@ -87,20 +87,22 @@ module.exports = (function (http, Utils) {
 
         function sendReplyMessage(fromUserName) {
             updateConfig().then(() => {
-                let reply;
-                if (contactSessions[fromUserName].getReceivedMsgNum() <= 2) {
-                    reply = `【自动回复】${messageMap[currentState]}`;
-                }
-                else {
-                    reply = `【自动回复】都说了${messageMap[currentState]}！`;
-                }
+                if (messageMap[currentState] != null) {
+                    let reply;
+                    if (contactSessions[fromUserName].getReceivedMsgNum() <= 2) {
+                        reply = `【自动回复】${messageMap[currentState]}`;
+                    }
+                    else {
+                        reply = `【自动回复】都说了${messageMap[currentState]}！`;
+                    }
 
-                console.log('Reply: ', reply);
-                Wechat.sendMsg(reply, fromUserName)
-                .catch(err => {
-                    console.error(err);
-                });
-                contactSessions[fromUserName].incrementMsgSent();
+                    console.log('Reply: ', reply);
+                    Wechat.sendMsg(reply, fromUserName)
+                    .catch(err => {
+                        console.error(err);
+                    });
+                    contactSessions[fromUserName].incrementMsgSent();
+                }
             }).catch(err => {
                 console.error(err);
             });
